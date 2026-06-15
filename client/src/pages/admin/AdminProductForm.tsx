@@ -11,102 +11,46 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronLeft, Upload, X, Star, Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
+import {
+  CATEGORIES,
+  SUBCATEGORIES,
+  SIZES,
+  CLOTHING_COLORS,
+  CONDITION_LABELS,
+  type Category,
+} from "@shared/categories";
 
-const CATEGORIES = ["Smartphones", "Tablet", "Notebook", "Computadores", "Periféricos", "Acessórios"];
-const COLORS = ["Preto", "Branco", "Azul", "Vermelho", "Verde", "Roxo", "Amarelo", "Rosa", "Prata", "Grafite", "Titanium", "Natural", "Outro"];
-const CONDITIONS = ["excelente", "bom", "regular"];
+const CONDITIONS = ["excelente", "bom", "regular"] as const;
 
-// Schema base com passthrough para campos dinâmicos
 const baseSchema = z.object({
-  category: z.string().min(1, "Selecione a categoria"),
+  category: z.enum(CATEGORIES),
   color: z.string().optional().nullable(),
-  condition: z.enum(["excelente", "bom", "regular"]),
+  condition: z.enum(CONDITIONS),
   costPrice: z.number().positive("Preço de custo obrigatório"),
   priceAdjustType: z.enum(["percentage", "fixed"]),
   priceAdjustValue: z.number().min(0).default(0),
   status: z.enum(["draft", "published"]),
   notes: z.string().optional().nullable(),
-}).passthrough();
-
-// Schemas específicos por categoria
-const smartphoneSchema = baseSchema.extend({
-  model: z.string().min(1, "Selecione o modelo"),
-  storage: z.string().optional().nullable(),
-  batteryHealth: z.number().int().min(1).max(100).optional().nullable(),
-  repairs: z.string().optional().nullable(),
 });
 
-const tabletSchema = baseSchema.extend({
-  model: z.string().min(1, "Selecione o modelo"),
-  storage: z.string().optional().nullable(),
-  batteryHealth: z.number().int().min(1).max(100).optional().nullable(),
-  repairs: z.string().optional().nullable(),
-});
-
-const notebookSchema = baseSchema.extend({
-  model: z.string().min(1, "Nome/Modelo obrigatório"),
-  brand: z.string().min(1, "Marca obrigatória"),
-  processor: z.string().min(1, "Processador obrigatório"),
-  ram: z.string().min(1, "RAM obrigatória"),
-  storageCapacity: z.string().min(1, "Armazenamento obrigatório"),
-  screen: z.string().min(1, "Tamanho de tela obrigatório"),
-  gpu: z.string().optional(),
-});
-
-const computerSchema = baseSchema.extend({
-  model: z.string().min(1, "Nome/Modelo obrigatório"),
-  brand: z.string().min(1, "Marca obrigatória"),
-  processor: z.string().min(1, "Processador obrigatório"),
-  ram: z.string().min(1, "RAM obrigatória"),
-  storageCapacity: z.string().min(1, "Armazenamento obrigatório"),
-  gpu: z.string().min(1, "GPU obrigatória"),
-  powerSupply: z.string().min(1, "Fonte obrigatória"),
-  cooler: z.string().optional().nullable(),
-  cabinet: z.string().optional().nullable(),
-});
-
-const peripheralSchema = baseSchema.extend({
+const clothingSchema = baseSchema.extend({
   model: z.string().min(1, "Nome do produto obrigatório"),
-  brand: z.string().min(1, "Marca obrigatória"),
-  itemType: z.string().min(1, "Tipo obrigatório"),
-  itemCategory: z.enum(["Informática", "Acessórios"]).optional().nullable(),
-  itemSubcategory: z.string().optional().nullable(),
-  specifications: z.string().optional(),
-});
-
-const accessorySchema = baseSchema.extend({
-  model: z.string().min(1, "Nome do produto obrigatório"),
-  itemType: z.string().min(1, "Tipo obrigatório"),
-  compatibility: z.string().min(1, "Compatibilidade obrigatória"),
-  specifications: z.string().optional(),
+  itemSubcategory: z.string().min(1, "Selecione a subcategoria"),
+  storage: z.string().min(1, "Selecione o tamanho"),
+  brand: z.string().optional().nullable(),
+  specifications: z.string().optional().nullable(),
 });
 
 type FormData = Record<string, any>;
 
 type SubmitHandler = (data: any) => Promise<void>;
 
-function getSchemaForCategory(category: string) {
-  switch (category) {
-    case "Smartphones":
-      return smartphoneSchema;
-    case "Tablet":
-      return tabletSchema;
-    case "Notebook":
-      return notebookSchema;
-    case "Computadores":
-      return computerSchema;
-    case "Periféricos":
-      return peripheralSchema;
-    case "Acessórios":
-      return accessorySchema;
-    default:
-      return smartphoneSchema;
-  }
+function getSchemaForCategory(_category: string) {
+  return clothingSchema;
 }
 
 function formatCurrency(value: number) {
@@ -126,7 +70,7 @@ export default function AdminProductForm() {
   );
   const { data: rates } = trpc.admin.getRatesPublic.useQuery();
 
-  const [selectedCategory, setSelectedCategory] = useState<string>("Smartphones");
+  const [selectedCategory, setSelectedCategory] = useState<string>("Lingerie");
   const [selectedRates, setSelectedRates] = useState<Array<{ installments: number; rateId: number }>>([]);
   const [photos, setPhotos] = useState<Array<{ id?: number; url: string; isPrimary: boolean; file?: File; uploading?: boolean }>>([]);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
@@ -134,7 +78,7 @@ export default function AdminProductForm() {
   const form = useForm<FormData>({
     mode: "onBlur",
     defaultValues: {
-      category: "Smartphones",
+      category: "Lingerie",
       condition: "bom",
       priceAdjustType: "percentage",
       status: "draft",
@@ -292,6 +236,7 @@ export default function AdminProductForm() {
   const handleCategoryChange = (value: string) => {
     setSelectedCategory(value);
     form.setValue("category", value);
+    form.setValue("itemSubcategory", "");
   };
 
   const onSubmit = async (data: any) => {
@@ -390,245 +335,88 @@ export default function AdminProductForm() {
               </Select>
             </div>
 
-            {/* Campos dinâmicos por categoria */}
-            {(selectedCategory === "Smartphones" || selectedCategory === "Tablet") && (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Modelo *</Label>
-                    <Input 
-                      value={form.watch("model") || ""}
-                      onChange={(e) => form.setValue("model", e.target.value)}
-                      placeholder="iPhone 15 Pro" 
-                    />
-                    {form.formState.errors.model && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.model)}</p>}
-                  </div>
-                  <div>
-                    <Label>Memória *</Label>
-                    <Select value={form.watch("storage") || ""} onValueChange={(v) => form.setValue("storage", v)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {["64GB", "128GB", "256GB", "512GB", "1TB"].map(s => (
-                          <SelectItem key={s} value={s}>{s}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {form.formState.errors.storage && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.storage)}</p>}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Saúde da Bateria (%) *</Label>
-                    <Slider value={[form.watch("batteryHealth") || 85]} onValueChange={(v) => form.setValue("batteryHealth", v[0])} min={1} max={100} step={1} />
-                    <p className="text-sm text-gray-600 mt-2">{form.watch("batteryHealth")}%</p>
-                  </div>
-                  <div>
-                    <Label>Cor</Label>
-                    <Select value={form.watch("color") || ""} onValueChange={(v) => form.setValue("color", v)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {COLORS.map(c => (
-                          <SelectItem key={c} value={c}>{c}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
+            {/* Campos do produto */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Reparos Realizados</Label>
-                  <Textarea {...form.register("repairs")} placeholder="Ex: Trocado vidro traseiro, bateria nova..." />
+                  <Label>Subcategoria *</Label>
+                  <Select
+                    value={form.watch("itemSubcategory") || ""}
+                    onValueChange={(v) => form.setValue("itemSubcategory", v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SUBCATEGORIES[selectedCategory as Category].map(sub => (
+                        <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {form.formState.errors.itemSubcategory && (
+                    <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.itemSubcategory)}</p>
+                  )}
                 </div>
-              </>
-            )}
-
-            {selectedCategory === "Notebook" && (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Modelo/Nome *</Label>
-                    <Input {...form.register("model")} placeholder="Notebook XYZ" />
-                    {form.formState.errors.model && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.model)}</p>}
-                  </div>
-                  <div>
-                    <Label>Marca *</Label>
-                    <Input {...form.register("brand")} placeholder="Dell, Lenovo, HP..." />
-                    {form.formState.errors.brand && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.brand)}</p>}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Processador *</Label>
-                    <Input {...form.register("processor")} placeholder="Intel i5 12th Gen" />
-                    {form.formState.errors.processor && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.processor)}</p>}
-                  </div>
-                  <div>
-                    <Label>RAM *</Label>
-                    <Input {...form.register("ram")} placeholder="16GB DDR4" />
-                    {form.formState.errors.ram && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.ram)}</p>}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Armazenamento *</Label>
-                    <Input {...form.register("storageCapacity")} placeholder="SSD 512GB" />
-                    {form.formState.errors.storageCapacity && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.storageCapacity)}</p>}
-                  </div>
-                  <div>
-                    <Label>Tela *</Label>
-                    <Input {...form.register("screen")} placeholder="15.6 polegadas" />
-                    {form.formState.errors.screen && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.screen)}</p>}
-                  </div>
-                </div>
-
                 <div>
-                  <Label>GPU</Label>
-                  <Input {...form.register("gpu")} placeholder="NVIDIA GTX 1650" />
+                  <Label>Tamanho *</Label>
+                  <Select value={form.watch("storage") || ""} onValueChange={(v) => form.setValue("storage", v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SIZES.map(s => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {form.formState.errors.storage && (
+                    <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.storage)}</p>
+                  )}
                 </div>
-              </>
-            )}
+              </div>
 
-            {selectedCategory === "Computadores" && (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Modelo/Nome *</Label>
-                    <Input {...form.register("model")} placeholder="PC Gamer XYZ" />
-                    {form.formState.errors.model && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.model)}</p>}
-                  </div>
-                  <div>
-                    <Label>Marca *</Label>
-                    <Input {...form.register("brand")} placeholder="Marca do gabinete" />
-                    {form.formState.errors.brand && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.brand)}</p>}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Processador *</Label>
-                    <Input {...form.register("processor")} placeholder="Intel i7 13th Gen" />
-                    {form.formState.errors.processor && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.processor)}</p>}
-                  </div>
-                  <div>
-                    <Label>RAM *</Label>
-                    <Input {...form.register("ram")} placeholder="32GB DDR5" />
-                    {form.formState.errors.ram && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.ram)}</p>}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Armazenamento *</Label>
-                    <Input {...form.register("storageCapacity")} placeholder="SSD 1TB + HDD 2TB" />
-                    {form.formState.errors.storageCapacity && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.storageCapacity)}</p>}
-                  </div>
-                  <div>
-                    <Label>GPU *</Label>
-                    <Input {...form.register("gpu")} placeholder="NVIDIA RTX 4070" />
-                    {form.formState.errors.gpu && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.gpu)}</p>}
-                  </div>
-                </div>
-
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Fonte *</Label>
-                  <Input {...form.register("powerSupply")} placeholder="850W 80+ Gold" />
-                  {form.formState.errors.powerSupply && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.powerSupply)}</p>}
+                  <Label>Nome do produto *</Label>
+                  <Input
+                    value={form.watch("model") || ""}
+                    onChange={(e) => form.setValue("model", e.target.value)}
+                    placeholder="Ex: Conjunto renda preta"
+                  />
+                  {form.formState.errors.model && (
+                    <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.model)}</p>
+                  )}
                 </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Cooler</Label>
-                    <Input {...form.register("cooler")} placeholder="Water Cooler 360mm" />
-                  </div>
-                  <div>
-                    <Label>Gabinete</Label>
-                    <Input {...form.register("cabinet")} placeholder="Lian Li O11 Dynamic" />
-                  </div>
-                </div>
-              </>
-            )}
-
-            {selectedCategory === "Periféricos" && (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Nome do Produto *</Label>
-                    <Input {...form.register("model")} placeholder="Mouse Gamer RGB" />
-                    {form.formState.errors.model && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.model)}</p>}
-                  </div>
-                  <div>
-                    <Label>Marca *</Label>
-                    <Input {...form.register("brand")} placeholder="Logitech, Razer..." />
-                    {form.formState.errors.brand && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.brand)}</p>}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Tipo *</Label>
-                    <Input {...form.register("itemType")} placeholder="Mouse, Teclado, Monitor, Headset..." />
-                    {form.formState.errors.itemType && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.itemType)}</p>}
-                  </div>
-                  <div>
-                    <Label>Categoria de Item</Label>
-                    <Select value={form.watch("itemCategory") || ""} onValueChange={(v) => form.setValue("itemCategory", v as any)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Informática">Informática</SelectItem>
-                        <SelectItem value="Acessórios">Acessórios</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
                 <div>
-                  <Label>Subcategoria</Label>
-                  <Input {...form.register("itemSubcategory")} placeholder="Mouse Gamer, Teclado Mecânico..." />
+                  <Label>Marca</Label>
+                  <Input {...form.register("brand")} placeholder="Opcional" />
                 </div>
+              </div>
 
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Especificações</Label>
-                  <Textarea {...form.register("specifications")} placeholder="DPI, conexão, resolução, etc..." />
+                  <Label>Cor</Label>
+                  <Select value={form.watch("color") || ""} onValueChange={(v) => form.setValue("color", v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CLOTHING_COLORS.map(c => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              </>
-            )}
+              </div>
 
-            {selectedCategory === "Acessórios" && (
-              <>
-                <div>
-                  <Label>Nome do Produto *</Label>
-                  <Input {...form.register("model")} placeholder="Capa de iPhone 15" />
-                  {form.formState.errors.model && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.model)}</p>}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Tipo *</Label>
-                    <Input {...form.register("itemType")} placeholder="Capa, Película, Carregador..." />
-                    {form.formState.errors.itemType && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.itemType)}</p>}
-                  </div>
-                  <div>
-                    <Label>Compatibilidade *</Label>
-                    <Input {...form.register("compatibility")} placeholder="iPhone 13-15" />
-                    {form.formState.errors.compatibility && <p className="text-red-500 text-sm mt-1">{getErrorMessage(form.formState.errors.compatibility)}</p>}
-                  </div>
-                </div>
-
-                <div>
-                  <Label>Especificações</Label>
-                  <Textarea {...form.register("specifications")} placeholder="Material, cor, características..." />
-                </div>
-              </>
-            )}
+              <div>
+                <Label>Material / Detalhes</Label>
+                <Textarea
+                  {...form.register("specifications")}
+                  placeholder="Ex: 90% algodão, 10% elastano, renda francesa..."
+                />
+              </div>
+            </div>
 
             {/* Campos comuns */}
             <div className="border-t pt-6">
@@ -643,20 +431,7 @@ export default function AdminProductForm() {
                     </SelectTrigger>
                     <SelectContent>
                       {CONDITIONS.map(c => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Cor</Label>
-                  <Select value={form.watch("color") || ""} onValueChange={(v) => form.setValue("color", v)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COLORS.map(c => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                        <SelectItem key={c} value={c}>{CONDITION_LABELS[c]}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

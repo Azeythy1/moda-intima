@@ -4,12 +4,13 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Smartphone, PercentCircle, LogOut, Home, Menu, X, ShieldAlert } from "lucide-react";
+import { Shirt, PercentCircle, LogOut, Home, Menu, X, ShieldAlert } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { STORE_NAME } from "@shared/categories";
 
 const navItems = [
-  { href: "/admin/produtos", label: "Produtos", icon: Smartphone },
+  { href: "/admin/produtos", label: "Produtos", icon: Shirt },
   { href: "/admin/taxas", label: "Taxas de Parcelamento", icon: PercentCircle },
 ];
 
@@ -27,10 +28,10 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
       <div className="flex items-center justify-between px-6 py-5 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <Smartphone className="w-4 h-4 text-primary-foreground" />
+            <Shirt className="w-4 h-4 text-primary-foreground" />
           </div>
           <div>
-            <p className="font-bold text-sidebar-foreground text-sm">iPhone Seminovos</p>
+            <p className="font-bold text-sidebar-foreground text-sm">{STORE_NAME}</p>
             <p className="text-xs text-muted-foreground">Painel Admin</p>
           </div>
         </div>
@@ -167,7 +168,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <Smartphone className="w-4 h-4 text-primary" />
+            <Shirt className="w-4 h-4 text-primary" />
             <span className="font-semibold text-sm">Painel Admin</span>
           </div>
         </div>

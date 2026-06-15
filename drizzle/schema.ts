@@ -26,17 +26,14 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
 export const categoryEnum = mysqlEnum("category", [
-  "Smartphones",
-  "Tablet",
-  "Notebook",
-  "Computadores",
-  "Periféricos",
-  "Acessórios",
+  "Lingerie",
+  "Cueca",
+  "Fitness",
 ]);
 
 export const iphones = mysqlTable("iphones", {
   id: int("id").autoincrement().primaryKey(),
-  category: categoryEnum.default("Smartphones").notNull(),
+  category: categoryEnum.default("Lingerie").notNull(),
   
   // Campos genéricos (todos os produtos)
   model: varchar("model", { length: 64 }).notNull(),
@@ -85,7 +82,7 @@ export const iphones = mysqlTable("iphones", {
 
 export type Iphone = typeof iphones.$inferSelect;
 export type InsertIphone = typeof iphones.$inferInsert;
-export type Category = "Smartphones" | "Tablet" | "Notebook" | "Computadores" | "Periféricos" | "Acessórios";
+export type Category = "Lingerie" | "Cueca" | "Fitness";
 
 export const iphonePhotos = mysqlTable("iphone_photos", {
   id: int("id").autoincrement().primaryKey(),

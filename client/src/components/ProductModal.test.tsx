@@ -4,31 +4,25 @@ import { ProductModal } from "./ProductModal";
 
 const mockProduct = {
   id: 1,
-  model: "iPhone 12",
-  storage: "64GB",
-  cashPrice: 1499.00,
+  model: "Conjunto Renda Preta",
+  storage: "M",
+  cashPrice: 149.9,
   condition: "excelente",
-  batteryHealth: 100,
-  repairs: "Tela e Bateria",
-  category: "Smartphones",
-  processor: "A14 Bionic",
-  ram: "4GB",
-  gpu: "Apple GPU",
-  screen: "6.1 polegadas",
-  brand: "Apple",
-  itemType: "Smartphone",
-  specifications: "iOS 15+",
-  compatibility: "Universal",
+  category: "Lingerie",
+  itemSubcategory: "Conjunto",
+  color: "Preto",
+  brand: "PolliShop",
+  specifications: "90% algodão, 10% elastano",
   photos: [
     { id: 1, url: "https://example.com/photo1.jpg", isPrimary: true },
     { id: 2, url: "https://example.com/photo2.jpg", isPrimary: false },
     { id: 3, url: "https://example.com/photo3.jpg", isPrimary: false },
   ],
   installmentOptions: [
-    { installments: 0, rate: 0, perInstallment: 1499.00, total: 1499.00 },
-    { installments: 3, rate: 5, perInstallment: 520.00, total: 1560.00 },
-    { installments: 6, rate: 8, perInstallment: 268.00, total: 1608.00 },
-    { installments: 12, rate: 12, perInstallment: 142.41, total: 1708.92 },
+    { installments: 0, rate: 0, perInstallment: 149.9, total: 149.9 },
+    { installments: 3, rate: 5, perInstallment: 52.47, total: 157.4 },
+    { installments: 6, rate: 8, perInstallment: 27.0, total: 161.89 },
+    { installments: 12, rate: 12, perInstallment: 14.02, total: 167.89 },
   ],
 };
 
@@ -46,7 +40,7 @@ describe("ProductModal", () => {
       />
     );
 
-    expect(screen.getByText("iPhone 12 64GB")).toBeDefined();
+    expect(screen.getByText("Conjunto Renda Preta — Conjunto")).toBeDefined();
   });
 
   it("displays product price correctly", () => {
@@ -62,7 +56,7 @@ describe("ProductModal", () => {
       />
     );
 
-    expect(screen.getByText("R$ 1.499,00")).toBeDefined();
+    expect(screen.getByText("R$ 149,90")).toBeDefined();
   });
 
   it("displays 12x installment option when available", () => {
@@ -79,7 +73,7 @@ describe("ProductModal", () => {
     );
 
     expect(screen.getByText("Ou 12x de")).toBeDefined();
-    expect(screen.getByText("R$ 142,41")).toBeDefined();
+    expect(screen.getByText("R$ 14,02")).toBeDefined();
   });
 
   it("displays product condition", () => {
@@ -95,10 +89,10 @@ describe("ProductModal", () => {
       />
     );
 
-    expect(screen.getByText("excelente")).toBeDefined();
+    expect(screen.getByText("Novo")).toBeDefined();
   });
 
-  it("displays battery health when available", () => {
+  it("displays size when available", () => {
     const mockOnClose = vi.fn();
     const mockOnAddToCart = vi.fn();
 
@@ -111,10 +105,10 @@ describe("ProductModal", () => {
       />
     );
 
-    expect(screen.getByText("100")).toBeDefined();
+    expect(screen.getByText("M")).toBeDefined();
   });
 
-  it("displays repair history when available", () => {
+  it("displays material details when available", () => {
     const mockOnClose = vi.fn();
     const mockOnAddToCart = vi.fn();
 
@@ -127,7 +121,7 @@ describe("ProductModal", () => {
       />
     );
 
-    expect(screen.getByText("Tela e Bateria")).toBeDefined();
+    expect(screen.getByText("90% algodão, 10% elastano")).toBeDefined();
   });
 
   it("displays category-specific details", () => {
@@ -143,10 +137,9 @@ describe("ProductModal", () => {
       />
     );
 
-    expect(screen.getByText("A14 Bionic")).toBeDefined();
-    expect(screen.getByText("4GB")).toBeDefined();
-    expect(screen.getByText("Apple GPU")).toBeDefined();
-    expect(screen.getByText("6.1 polegadas")).toBeDefined();
+    expect(screen.getByText("Lingerie · Conjunto")).toBeDefined();
+    expect(screen.getByText("PolliShop")).toBeDefined();
+    expect(screen.getByText("Preto")).toBeDefined();
   });
 
   it("displays photo counter when multiple photos exist", () => {
@@ -244,15 +237,13 @@ describe("ProductModal", () => {
     const mockOnAddToCart = vi.fn();
     const minimalProduct = {
       id: 1,
-      model: "iPhone 12",
-      storage: "64GB",
-      cashPrice: 1499.00,
+      model: "Calcinha Fio Dental",
+      storage: "P",
+      cashPrice: 39.9,
       condition: "bom",
-      batteryHealth: null,
-      repairs: undefined,
       photos: [{ id: 1, url: "https://example.com/photo1.jpg", isPrimary: true }],
       installmentOptions: [
-        { installments: 0, rate: 0, perInstallment: 1499.00, total: 1499.00 },
+        { installments: 0, rate: 0, perInstallment: 39.9, total: 39.9 },
       ],
     };
 
@@ -265,7 +256,7 @@ describe("ProductModal", () => {
       />
     );
 
-    expect(screen.getByText("iPhone 12 64GB")).toBeDefined();
-    expect(screen.getByText("bom")).toBeDefined();
+    expect(screen.getByText("Calcinha Fio Dental")).toBeDefined();
+    expect(screen.getByText("Seminovo")).toBeDefined();
   });
 });

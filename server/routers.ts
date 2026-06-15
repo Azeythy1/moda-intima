@@ -23,6 +23,7 @@ import {
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
 import { applyPendingMigrations } from "./apply-migrations";
+import { CATEGORIES } from "@shared/categories";
 
 // ─── Admin guard ──────────────────────────────────────────────────────────────
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -49,7 +50,7 @@ function calcInstallmentPrice(cashPrice: number, rate: number, installments: num
 
 // ─── Schemas ──────────────────────────────────────────────────────────────────
 const iphoneInput = z.object({
-  category: z.enum(["Smartphones", "Tablet", "Notebook", "Computadores", "Periféricos", "Acessórios"]).default("Smartphones"),
+  category: z.enum(CATEGORIES).default("Lingerie"),
   model: z.string().min(1),
   storage: z.string().optional().nullable(),
   color: z.string().optional(),

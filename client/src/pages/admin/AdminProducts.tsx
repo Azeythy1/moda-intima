@@ -9,7 +9,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Smartphone, Battery, Wrench, DollarSign, Laptop, Monitor, MousePointer2, Box, Tablet as TabletIcon, Cpu } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, Shirt, Heart, Dumbbell, DollarSign } from "lucide-react";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -30,13 +30,10 @@ function SkeletonRow() {
 
 function getCategoryIcon(category: string) {
   switch (category) {
-    case "Smartphones": return <Smartphone className="w-4 h-4" />;
-    case "Tablet": return <TabletIcon className="w-4 h-4" />;
-    case "Notebook": return <Laptop className="w-4 h-4" />;
-    case "Computadores": return <Monitor className="w-4 h-4" />;
-    case "Periféricos": return <MousePointer2 className="w-4 h-4" />;
-    case "Acessórios": return <Box className="w-4 h-4" />;
-    default: return <Smartphone className="w-4 h-4" />;
+    case "Lingerie": return <Heart className="w-4 h-4" />;
+    case "Cueca": return <Shirt className="w-4 h-4" />;
+    case "Fitness": return <Dumbbell className="w-4 h-4" />;
+    default: return <Shirt className="w-4 h-4" />;
   }
 }
 
@@ -68,7 +65,7 @@ export default function AdminProducts() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Produtos</h1>
-          <p className="text-muted-foreground text-sm mt-1">Gerencie o catálogo de eletrônicos</p>
+          <p className="text-muted-foreground text-sm mt-1">Gerencie o catálogo de moda</p>
         </div>
         <Link href="/admin/produtos/novo">
           <Button className="gap-2">
@@ -82,7 +79,7 @@ export default function AdminProducts() {
       {!isLoading && products && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
-            { label: "Total", value: products.length, icon: Smartphone },
+            { label: "Total", value: products.length, icon: Shirt },
             { label: "Publicados", value: products.filter(p => p.status === "published").length, icon: Eye },
             { label: "Rascunhos", value: products.filter(p => p.status === "draft").length, icon: EyeOff },
             { label: "Com fotos", value: products.filter(p => p.photos.length > 0).length, icon: DollarSign },
@@ -111,7 +108,7 @@ export default function AdminProducts() {
 
       {!isLoading && (!products || products.length === 0) && (
         <div className="text-center py-20 rounded-2xl border border-dashed border-border">
-          <Box className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+          <Shirt className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
           <h3 className="font-semibold text-foreground mb-2">Nenhum produto cadastrado</h3>
           <p className="text-muted-foreground text-sm mb-6">Adicione seu primeiro produto ao catálogo.</p>
           <Link href="/admin/produtos/novo">
@@ -138,7 +135,7 @@ export default function AdminProducts() {
                     <img src={primaryPhoto.url} alt={product.model} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <Smartphone className="w-6 h-6 text-muted-foreground/40" />
+                      <Shirt className="w-6 h-6 text-muted-foreground/40" />
                     </div>
                   )}
                 </div>
@@ -152,6 +149,7 @@ export default function AdminProducts() {
                       </div>
                       <h3 className="font-semibold text-foreground">{product.model}</h3>
                     </div>
+                    {product.itemSubcategory && <Badge variant="outline" className="text-xs">{product.itemSubcategory}</Badge>}
                     {product.storage && <Badge variant="secondary" className="text-xs">{product.storage}</Badge>}
                     {product.brand && <Badge variant="outline" className="text-xs">{product.brand}</Badge>}
                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${
@@ -163,21 +161,6 @@ export default function AdminProducts() {
                     </span>
                   </div>
                   <div className="flex items-center gap-4 mt-1.5 text-xs text-muted-foreground flex-wrap">
-                    {product.batteryHealth !== null && (
-                      <span className="flex items-center gap-1">
-                        <Battery className="w-3 h-3" /> {product.batteryHealth}%
-                      </span>
-                    )}
-                    {product.processor && (
-                      <span className="flex items-center gap-1">
-                        <Cpu className="w-3 h-3" /> {product.processor}
-                      </span>
-                    )}
-                    {product.repairs && (
-                      <span className="flex items-center gap-1">
-                        <Wrench className="w-3 h-3" /> Com reparos
-                      </span>
-                    )}
                     <span className="text-muted-foreground/60">Custo: {formatCurrency(product.costPrice)}</span>
                     <span className="font-medium text-primary">Venda: {formatCurrency(product.cashPrice)}</span>
                   </div>

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, ShoppingCart, Battery, Wrench, ShieldCheck } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShoppingCart, Ruler, Palette, Tag } from "lucide-react";
 import { motion } from "framer-motion";
+import { CONDITION_LABELS } from "@shared/categories";
 
 interface Photo {
   id: number;
@@ -17,17 +18,10 @@ interface CatalogItem {
   color?: string | null;
   cashPrice: number;
   condition: string;
-  batteryHealth: number | null;
-  repairs?: string | null;
   category?: string;
-  processor?: string;
-  ram?: string;
-  gpu?: string;
-  screen?: string;
-  brand?: string;
-  itemType?: string;
-  specifications?: string;
-  compatibility?: string;
+  itemSubcategory?: string | null;
+  brand?: string | null;
+  specifications?: string | null;
   photos: Photo[];
   installmentOptions: Array<{
     installments: number;
@@ -52,28 +46,23 @@ export function ProductModal({ product, isOpen, onClose, onAddToCart }: ProductM
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const photos = product.photos.length > 0 ? product.photos : [];
   const currentPhoto = photos[currentPhotoIndex];
-
-  const handlePrevPhoto = () => {
-    setCurrentPhotoIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
-  };
-
-  const handleNextPhoto = () => {
-    setCurrentPhotoIndex((prev) => (prev === photos.length - 1 ? 0 : prev + 1));
-  };
-
   const installment12x = product.installmentOptions.find(opt => opt.installments === 12);
+  const conditionLabel =
+    CONDITION_LABELS[product.condition as keyof typeof CONDITION_LABELS] ?? product.condition;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-screen overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-foreground">{product.model} {product.storage}</DialogTitle>
+          <DialogTitle className="text-foreground">
+            {product.model}
+            {product.itemSubcategory ? ` — ${product.itemSubcategory}` : ""}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Photo Carousel */}
           <div className="space-y-4">
-            <div className="relative w-full bg-muted rounded-lg overflow-hidden aspect-square">
+            <div className="relative w-full bg-muted rounded-lg overflow-hidden aspect-[3/4]">
               {currentPhoto ? (
                 <motion.img
                   key={currentPhotoIndex}
@@ -90,33 +79,27 @@ export function ProductModal({ product, isOpen, onClose, onAddToCart }: ProductM
                 </div>
               )}
 
-              {/* Navigation Arrows */}
               {photos.length > 1 && (
                 <>
                   <button
-                    onClick={handlePrevPhoto}
+                    onClick={() => setCurrentPhotoIndex(prev => (prev === 0 ? photos.length - 1 : prev - 1))}
                     className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={handleNextPhoto}
+                    onClick={() => setCurrentPhotoIndex(prev => (prev === photos.length - 1 ? 0 : prev + 1))}
                     className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>
+                  <div className="absolute bottom-2 right-2 bg-black/50 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    {currentPhotoIndex + 1} / {photos.length}
+                  </div>
                 </>
-              )}
-
-              {/* Photo Counter */}
-              {photos.length > 1 && (
-                <div className="absolute bottom-2 right-2 bg-black/50 text-white px-3 py-1 rounded-full text-sm font-medium">
-                  {currentPhotoIndex + 1} / {photos.length}
-                </div>
               )}
             </div>
 
-            {/* Thumbnail Strip */}
             {photos.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {photos.map((photo, idx) => (
@@ -129,94 +112,65 @@ export function ProductModal({ product, isOpen, onClose, onAddToCart }: ProductM
                         : "border-border hover:border-primary/50"
                     }`}
                   >
-                    <img
-                      src={photo.url}
-                      alt={`Thumbnail ${idx + 1}`}
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={photo.url} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Product Details */}
           <div className="space-y-6">
-            {/* Price Section */}
             <div className="space-y-2">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">À vista</p>
                 <p className="text-3xl font-bold text-primary">{formatCurrency(product.cashPrice)}</p>
               </div>
-
               {installment12x && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-sm text-blue-600 font-medium">Ou 12x de</p>
-                  <p className="text-xl font-bold text-blue-700">{formatCurrency(installment12x.perInstallment)}</p>
+                <div className="bg-rose-50 border border-rose-200 rounded-lg p-3">
+                  <p className="text-sm text-rose-600 font-medium">Ou 12x de</p>
+                  <p className="text-xl font-bold text-rose-700">{formatCurrency(installment12x.perInstallment)}</p>
                 </div>
               )}
             </div>
 
-            {/* Condition & Battery */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-primary" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Condição</p>
-                  <p className="font-semibold text-foreground">{product.condition}</p>
-                </div>
-              </div>
-
-              {product.batteryHealth && (
-                <div className="flex items-center gap-2">
-                  <Battery className="w-5 h-5 text-primary" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Saúde da Bateria</p>
-                    <p className="font-semibold text-foreground">{product.batteryHealth}</p>
-                  </div>
-                </div>
-              )}
-
-              {product.repairs && (
-                <div className="flex items-center gap-2">
-                  <Wrench className="w-5 h-5 text-primary" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Histórico de Reparos</p>
-                    <p className="font-semibold text-foreground">{product.repairs}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Category-Specific Details */}
             <div className="space-y-3 border-t border-border pt-4">
-              {product.processor && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Processador</p>
-                  <p className="font-semibold text-foreground">{product.processor}</p>
+              {product.category && (
+                <div className="flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-primary" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Categoria</p>
+                    <p className="font-semibold text-foreground">
+                      {product.category}
+                      {product.itemSubcategory ? ` · ${product.itemSubcategory}` : ""}
+                    </p>
+                  </div>
                 </div>
               )}
 
-              {product.ram && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Memória RAM</p>
-                  <p className="font-semibold text-foreground">{product.ram}</p>
+              {product.storage && (
+                <div className="flex items-center gap-2">
+                  <Ruler className="w-4 h-4 text-primary" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Tamanho</p>
+                    <p className="font-semibold text-foreground">{product.storage}</p>
+                  </div>
                 </div>
               )}
 
-              {product.gpu && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Placa de Vídeo</p>
-                  <p className="font-semibold text-foreground">{product.gpu}</p>
+              {product.color && (
+                <div className="flex items-center gap-2">
+                  <Palette className="w-4 h-4 text-primary" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Cor</p>
+                    <p className="font-semibold text-foreground">{product.color}</p>
+                  </div>
                 </div>
               )}
 
-              {product.screen && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Tela</p>
-                  <p className="font-semibold text-foreground">{product.screen}</p>
-                </div>
-              )}
+              <div>
+                <p className="text-sm text-muted-foreground">Condição</p>
+                <p className="font-semibold text-foreground capitalize">{conditionLabel}</p>
+              </div>
 
               {product.brand && (
                 <div>
@@ -227,26 +181,14 @@ export function ProductModal({ product, isOpen, onClose, onAddToCart }: ProductM
 
               {product.specifications && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Especificações</p>
+                  <p className="text-sm text-muted-foreground">Material / Detalhes</p>
                   <p className="font-semibold text-foreground">{product.specifications}</p>
-                </div>
-              )}
-
-              {product.compatibility && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Compatibilidade</p>
-                  <p className="font-semibold text-foreground">{product.compatibility}</p>
                 </div>
               )}
             </div>
 
-            {/* Action Buttons */}
             <div className="flex gap-3 pt-4 border-t border-border">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={onClose}
-              >
+              <Button variant="outline" className="flex-1" onClick={onClose}>
                 Fechar
               </Button>
               <Button

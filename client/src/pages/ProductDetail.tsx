@@ -4,7 +4,8 @@ import { trpc } from "@/lib/trpc";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Smartphone, Battery, Wrench, ChevronLeft, ChevronRight, ShieldCheck, CheckCircle2, Cpu, HardDrive, Monitor, MousePointer2, Box, Layers, Laptop, MonitorSmartphone, Tablet as TabletIcon } from "lucide-react";
+import { Shirt, ChevronLeft, ChevronRight, Heart, Dumbbell, Ruler, Palette, Tag } from "lucide-react";
+import { CONDITION_LABELS, type Category } from "@shared/categories";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -12,13 +13,10 @@ function formatCurrency(value: number) {
 
 function getCategoryIcon(category: string) {
   switch (category) {
-    case "Smartphones": return <Smartphone className="w-3 h-3 text-primary-foreground" />;
-    case "Tablet": return <TabletIcon className="w-3 h-3 text-primary-foreground" />;
-    case "Notebook": return <Laptop className="w-3 h-3 text-primary-foreground" />;
-    case "Computadores": return <Monitor className="w-3 h-3 text-primary-foreground" />;
-    case "Periféricos": return <MousePointer2 className="w-3 h-3 text-primary-foreground" />;
-    case "Acessórios": return <Box className="w-3 h-3 text-primary-foreground" />;
-    default: return <Smartphone className="w-3 h-3 text-primary-foreground" />;
+    case "Lingerie": return <Heart className="w-3 h-3 text-primary-foreground" />;
+    case "Cueca": return <Shirt className="w-3 h-3 text-primary-foreground" />;
+    case "Fitness": return <Dumbbell className="w-3 h-3 text-primary-foreground" />;
+    default: return <Shirt className="w-3 h-3 text-primary-foreground" />;
   }
 }
 
@@ -40,7 +38,7 @@ export default function ProductDetail() {
   if (!item) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <Smartphone className="w-16 h-16 text-muted-foreground/30" />
+        <Shirt className="w-16 h-16 text-muted-foreground/30" />
         <h2 className="text-xl font-semibold">Produto não encontrado</h2>
         <Link href="/"><Button variant="outline">Voltar ao catálogo</Button></Link>
       </div>
@@ -49,14 +47,11 @@ export default function ProductDetail() {
 
   const photos = item.photos;
   const currentPhoto = photos[photoIdx];
-  const bestInstallment = item.installmentOptions.reduce<typeof item.installmentOptions[0] | null>((best, opt) => {
-    if (!best || opt.installments > best.installments) return opt;
-    return best;
-  }, null);
+  const conditionLabel =
+    CONDITION_LABELS[item.condition as keyof typeof CONDITION_LABELS] ?? item.condition;
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
         <div className="container">
           <div className="flex items-center h-16 gap-4">
@@ -69,7 +64,9 @@ export default function ProductDetail() {
               <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
                 {getCategoryIcon(item.category as string)}
               </div>
-              <span className="font-semibold text-sm text-foreground">{item.model} {item.storage ? `· ${item.storage}` : ""}</span>
+              <span className="font-semibold text-sm text-foreground">
+                {item.model} {item.storage ? `· ${item.storage}` : ""}
+              </span>
             </div>
           </div>
         </div>
@@ -77,14 +74,13 @@ export default function ProductDetail() {
 
       <div className="container py-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Photo gallery */}
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-            <div className="rounded-2xl overflow-hidden border border-border bg-card aspect-square relative">
+            <div className="rounded-2xl overflow-hidden border border-border bg-card aspect-[3/4] relative">
               {currentPhoto ? (
                 <img src={currentPhoto.url} alt={item.model} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <Smartphone className="w-24 h-24 text-muted-foreground/20" />
+                  <Shirt className="w-24 h-24 text-muted-foreground/20" />
                 </div>
               )}
               {photos.length > 1 && (
@@ -119,162 +115,66 @@ export default function ProductDetail() {
             )}
           </motion.div>
 
-          {/* Info */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-6">
             <div>
               <h1 className="text-3xl font-bold text-foreground">{item.model}</h1>
               <div className="flex flex-wrap items-center gap-3 mt-3">
+                {item.itemSubcategory && <Badge variant="secondary" className="text-sm">{item.itemSubcategory}</Badge>}
                 {item.storage && <Badge variant="secondary" className="text-sm">{item.storage}</Badge>}
                 {item.brand && <Badge variant="outline" className="text-sm">{item.brand}</Badge>}
                 {item.color && <span className="text-sm text-muted-foreground">{item.color}</span>}
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                  item.condition === "excelente" ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" :
-                  item.condition === "bom" ? "bg-blue-500/15 text-blue-400 border-blue-500/30" :
-                  "bg-yellow-500/15 text-yellow-400 border-yellow-500/30"
-                }`}>
-                  {item.condition === "excelente" ? "Excelente" : item.condition === "bom" ? "Bom" : "Regular"}
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-rose-100 text-rose-700 border-rose-300">
+                  {conditionLabel}
                 </span>
               </div>
             </div>
 
-            {/* Specs */}
             <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">Especificações</h3>
+              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">Detalhes</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Campos de Hardware (Notebook/Computadores) */}
-                {item.processor && (
+                {item.category && (
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Cpu className="w-4 h-4 text-primary" />
+                      <Tag className="w-4 h-4 text-primary" />
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Processador</p>
-                      <p className="font-semibold text-foreground">{item.processor}</p>
+                      <p className="text-xs text-muted-foreground">Categoria</p>
+                      <p className="font-semibold text-foreground">{item.category as Category}</p>
                     </div>
                   </div>
                 )}
-                {item.ram && (
+                {item.storage && (
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Layers className="w-4 h-4 text-primary" />
+                      <Ruler className="w-4 h-4 text-primary" />
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Memória RAM</p>
-                      <p className="font-semibold text-foreground">{item.ram}</p>
+                      <p className="text-xs text-muted-foreground">Tamanho</p>
+                      <p className="font-semibold text-foreground">{item.storage}</p>
                     </div>
                   </div>
                 )}
-                {item.storageCapacity && (
+                {item.color && (
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <HardDrive className="w-4 h-4 text-primary" />
+                      <Palette className="w-4 h-4 text-primary" />
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Armazenamento</p>
-                      <p className="font-semibold text-foreground">{item.storageCapacity}</p>
+                      <p className="text-xs text-muted-foreground">Cor</p>
+                      <p className="font-semibold text-foreground">{item.color}</p>
                     </div>
                   </div>
                 )}
-                {item.gpu && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <MonitorSmartphone className="w-4 h-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Placa de Vídeo</p>
-                      <p className="font-semibold text-foreground">{item.gpu}</p>
-                    </div>
-                  </div>
-                )}
-                {item.screen && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Monitor className="w-4 h-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Tela</p>
-                      <p className="font-semibold text-foreground">{item.screen}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Campos de Smartphone/Tablet */}
-                {item.batteryHealth && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Battery className="w-4 h-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Saúde da Bateria</p>
-                      <p className={`font-semibold ${item.batteryHealth >= 85 ? "text-emerald-400" : item.batteryHealth >= 70 ? "text-yellow-400" : "text-red-400"}`}>
-                        {item.batteryHealth}%
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Campos de Periféricos/Acessórios */}
-                {item.itemType && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Box className="w-4 h-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Tipo</p>
-                      <p className="font-semibold text-foreground capitalize">{item.itemType}</p>
-                    </div>
-                  </div>
-                )}
-                {item.compatibility && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <CheckCircle2 className="w-4 h-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Compatibilidade</p>
-                      <p className="font-semibold text-foreground">{item.compatibility}</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <ShieldCheck className="w-4 h-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Condição</p>
-                    <p className="font-semibold text-foreground capitalize">{item.condition}</p>
-                  </div>
-                </div>
               </div>
 
               {item.specifications && (
                 <div className="pt-4 border-t border-border">
-                  <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">Especificações Técnicas</p>
+                  <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">Material / Detalhes</p>
                   <p className="text-sm text-foreground whitespace-pre-wrap">{item.specifications}</p>
-                </div>
-              )}
-
-              {item.repairs && (
-                <div className="flex items-start gap-3 pt-2 border-t border-border">
-                  <div className="w-9 h-9 rounded-lg bg-yellow-500/10 flex items-center justify-center flex-shrink-0">
-                    <Wrench className="w-4 h-4 text-yellow-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Reparos realizados</p>
-                    <p className="text-sm text-foreground">{item.repairs}</p>
-                  </div>
-                </div>
-              )}
-              {(item.category === "Smartphones" || item.category === "Tablet") && !item.repairs && (
-                <div className="flex items-center gap-3 pt-2 border-t border-border">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <p className="text-sm text-emerald-400">Sem reparos registrados</p>
                 </div>
               )}
             </div>
 
-            {/* Pricing */}
             <div className="rounded-xl border border-primary/30 bg-primary/5 p-5">
               <div className="flex items-end justify-between mb-4">
                 <div>
