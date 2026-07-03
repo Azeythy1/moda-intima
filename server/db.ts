@@ -5,7 +5,16 @@ import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
+function isDatabaseDisabled() {
+  return process.env.DISABLE_DB === "true" || process.env.DISABLE_DATABASE === "true";
+}
+
 export async function getDb() {
+  if (isDatabaseDisabled()) {
+    console.warn("[Database] Disabled via environment flag. Backend database operations are turned off.");
+    return null;
+  }
+
   if (!_db && process.env.DATABASE_URL) {
     try {
       _db = drizzle(process.env.DATABASE_URL);
